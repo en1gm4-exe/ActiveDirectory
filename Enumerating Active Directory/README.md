@@ -178,7 +178,148 @@ Now, it's time to add AD Snap-ins,
   2. Active Directory Sites and Services
   3. Active Directory Domains and Trusts
 
-- Configure each to point to za.tryhackme.com:
-     Right-click each snap-in > Change Domain/Forest > Enter za.tryhackme.com.
+![image](https://github.com/user-attachments/assets/b599c645-58b1-4b7f-b8b4-8a1d6b68ac64)
 
+
+- Configure each to point to za.tryhackme.com:
+  
+     Right-click each `snap-in` → `Change Domain/Forest` → Enter `za.tryhackme.com`.
+
+![image](https://github.com/user-attachments/assets/8168aae9-16ec-4a1c-bca8-91aefb222260)
+
+
+Next, we need to enable Advanced Features
+ - Right-click `Active Directory Users and Computers` → `View` → `Advanced Features`.
+
+
+
+<br>
+
+## _Answers_
+
+1. How many Computer objects are part of the Servers OU?
+
+       2
+  
+For this we have to navigate to `Active Directory Users and Computers` → `za.tryhackme.com` → `Servers`  and we can count the listed  Computer objects..  i.e. `2` in our case
+![image](https://github.com/user-attachments/assets/11af6719-9e0f-4200-9312-169ae4c191fa)
+
+
+
+2. How many Computer objects are part of the Workstations OU?
+
+       1
+
+For this we have to navigate to `Active Directory Users and Computers` → `za.tryhackme.com` → `Workstations`  and we can count the listed  Computer objects..  i.e. `1` in our case
+![image](https://github.com/user-attachments/assets/c6873f80-3790-4ef2-a205-a910a978880d)
+
+
+4. How many departments (Organisational Units) does this organisation consist of?
+
+       7
+
+For this we have to navigate to `Active Directory Users and Computers` → `za.tryhackme.com` → `People`  and we can count the listed  departments..  i.e. `7` in our case
+![image](https://github.com/user-attachments/assets/ca6535db-5777-401b-918e-7e34eb915b36)
+
+
+5. How many Admin tiers does this organisation have?
+
+       3 
+
+For this we have to navigate to `Active Directory Users and Computers` → `za.tryhackme.com` → `Admins`  and we can count the tiers..  i.e. `T0`,`T1` and `T2` in our case
+![image](https://github.com/user-attachments/assets/bf1609d5-9453-4c15-843d-de6e7eb503ee)
+
+
+6. What is the value of the flag stored in the description attribute of the t0_tinus.green account?
+
+       THM{Enumerating.Via.MMC}
+ 
+For this, I simply looked into T0,  `t0_tinus.green` was there and then `Right-click` on it and click on `Properties` and we can find the flag in the `description` attribute. 
+
+![image](https://github.com/user-attachments/assets/6c4fc3dc-9ff9-488b-873b-53f175652ce7)
+
+<br>
+
+
+## Task 4 : Enumeration through Command Prompt
+
+There are times when you just need to perform a quick and dirty AD lookup, and Command Prompt has your back. `Good ol'` reliable CMD is handy when you perhaps don't have RDP access to a system, defenders are monitoring for PowerShell use, and you need to perform your AD Enumeration through a `Remote Access Trojan` (RAT). It can even be helpful to embed a couple of simple AD enumeration commands in your phishing payload to help you gain the vital information that can help you stage the final attack.
+
+
+`CMD` has a built-in command that we can use to enumerate information about AD, namely `net`. The `net` command is a handy tool to enumerate information about the local system and AD. We will look at a couple of interesting things we can enumerate from this position, but this is not an exhaustive list.
+
+1. Enumerate All Domain Users
+
+       net user /domain
+
+This command lists all AD user accounts in the domain.
+
+
+
+2. Get Detailed User Info
+
+       net user <username> /domain
+   
+This shows account status, password last set, group memberships (limited to 10 groups), and logon restrictions.
+
+
+
+3. List All Domain Groups
+
+       net group /domain
+
+This reveals security groups (e.g., Domain Admins, Tier 1 Admins).
+
+
+4. Check Group Membership
+
+       net group "<Group Name>" /domain
+
+This lists members of a specific group (e.g., net group "Tier 1 Admins" /domain).
+
+
+5. View Password Policy
+
+
+       net accounts /domain
+   
+This displays password rules:
+  - Minimum/maximum password age.
+  - Lockout threshold & duration.
+  - Password history & length requirements.
+
+Use Cases
+Quick Recon: Fast way to gather AD details without external tools.
+
+Phishing Payloads: Can be embedded in VBScript/macros for initial intel.
+
+Low-Profile Attacks: Often overlooked by defenders compared to PowerShell.
+
+Advantages
+✅ No Extra Tools Needed – Built into Windows.
+✅ Stealthy – Less monitored than PowerShell.
+✅ Works in Restricted GUI-less Environments (e.g., RATs).
+
+Limitations
+❌ Requires Domain-Joined Machine – Fails on non-domain systems (defaults to WORKGROUP).
+❌ Incomplete Data – Truncates output (e.g., >10 group memberships not shown).
+❌ Basic Functionality – Lacks advanced filtering/export options.
+
+<br>
+
+## _Answers_
+
+1. Apart from the Domain Users group, what other group is the aaron.harris account a member of?
+
+
+2. Is the Guest account active? (Yay,Nay)
+
+
+3. How many accounts are a member of the Tier 1 Admins group?
+
+
+4. What is the account lockout duration of the current password policy in minutes?
+
+
+<br>
 
