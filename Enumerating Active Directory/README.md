@@ -288,22 +288,11 @@ This displays password rules:
   - Lockout threshold & duration.
   - Password history & length requirements.
 
-Use Cases
-Quick Recon: Fast way to gather AD details without external tools.
+### Use Cases
+- **Quick Recon:** Fast way to gather AD details without external tools.
+- **Phishing Payloads:** Can be embedded in `VBScript`/`macros` for initial intel.
+- **Low-Profile Attacks:** Often overlooked by defenders compared to PowerShell.
 
-Phishing Payloads: Can be embedded in VBScript/macros for initial intel.
-
-Low-Profile Attacks: Often overlooked by defenders compared to PowerShell.
-
-Advantages
-✅ No Extra Tools Needed – Built into Windows.
-✅ Stealthy – Less monitored than PowerShell.
-✅ Works in Restricted GUI-less Environments (e.g., RATs).
-
-Limitations
-❌ Requires Domain-Joined Machine – Fails on non-domain systems (defaults to WORKGROUP).
-❌ Incomplete Data – Truncates output (e.g., >10 group memberships not shown).
-❌ Basic Functionality – Lacks advanced filtering/export options.
 
 <br>
 
@@ -311,14 +300,116 @@ Limitations
 
 1. Apart from the Domain Users group, what other group is the aaron.harris account a member of?
 
+       Internet Access
 
-2. Is the Guest account active? (Yay,Nay)
+For this we need to use follwing command..
+
+      net user aaron.harris /domain
+   
+   This will list the details of the user and we need to check Group memberships attribute and we can find out our answer..
+
+ ![image](https://github.com/user-attachments/assets/115ec4d4-c792-4df6-b3d4-7ead9db29a40)
+
+   
+
+3. Is the Guest account active? (Yay,Nay)
+
+       Nay
+
+   By looking at the output of the  follwoing command we can tell user status..
+
+       net user guest /domain
+       
+  If "Account active" is `Yes` then it is `Yay` and `Nay` if "Account active" is `No`.
+![image](https://github.com/user-attachments/assets/6e07ee66-7a06-4c8b-8a4e-35e5ffca2d88)
 
 
-3. How many accounts are a member of the Tier 1 Admins group?
+
+4. How many accounts are a member of the Tier 1 Admins group?
+
+       7       
+
+ By using the following command, we can find the names of all the users..
+
+       net group "Tier 1 Admins" /domain
+
+![image](https://github.com/user-attachments/assets/e06e1790-d359-4960-aa16-7aa11f957817)
 
 
-4. What is the account lockout duration of the current password policy in minutes?
+5. What is the account lockout duration of the current password policy in minutes?
+
+       30
+
+For find out the lockout duration policy, I used the following command...
+
+       net accounts /domain
+   
+![image](https://github.com/user-attachments/assets/a9372efb-acca-4b64-80bf-82b7eade8f17)
+
+
+<br>
+
+
+
+
+
+## Task 5 : Enumeration through PowerShell
+
+PowerShell is the upgrade of Command Prompt. Microsoft first released it in 2006. While PowerShell has all the standard functionality Command Prompt provides, it also provides access to cmdlets (pronounced command-lets), which are .NET classes to perform specific functions. While we can write our own cmdlets, like the creators of PowerView did, we can already get very far using the built-in ones.
+
+
+
+<br>
+
+## _Answers_
+
+1. Apart from the Domain Users group, what other group is the aaron.harris account a member of?
+
+       Internet Access
+
+For this we need to use follwing command..
+
+      net user aaron.harris /domain
+   
+   This will list the details of the user and we need to check Group memberships attribute and we can find out our answer..
+
+ ![image](https://github.com/user-attachments/assets/115ec4d4-c792-4df6-b3d4-7ead9db29a40)
+
+   
+
+3. Is the Guest account active? (Yay,Nay)
+
+       Nay
+
+   By looking at the output of the  follwoing command we can tell user status..
+
+       net user guest /domain
+       
+  If "Account active" is `Yes` then it is `Yay` and `Nay` if "Account active" is `No`.
+![image](https://github.com/user-attachments/assets/6e07ee66-7a06-4c8b-8a4e-35e5ffca2d88)
+
+
+
+4. How many accounts are a member of the Tier 1 Admins group?
+
+       7       
+
+ By using the following command, we can find the names of all the users..
+
+       net group "Tier 1 Admins" /domain
+
+![image](https://github.com/user-attachments/assets/e06e1790-d359-4960-aa16-7aa11f957817)
+
+
+5. What is the account lockout duration of the current password policy in minutes?
+
+       30
+
+For find out the lockout duration policy, I used the following command...
+
+       net accounts /domain
+   
+![image](https://github.com/user-attachments/assets/a9372efb-acca-4b64-80bf-82b7eade8f17)
 
 
 <br>
