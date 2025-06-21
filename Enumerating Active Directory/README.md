@@ -350,12 +350,58 @@ For find out the lockout duration policy, I used the following command...
 <br>
 
 
-
-
-
 ## Task 5 : Enumeration through PowerShell
 
-PowerShell is the upgrade of Command Prompt. Microsoft first released it in 2006. While PowerShell has all the standard functionality Command Prompt provides, it also provides access to cmdlets (pronounced command-lets), which are .NET classes to perform specific functions. While we can write our own cmdlets, like the creators of PowerView did, we can already get very far using the built-in ones.
+PowerShell is the upgrade of Command Prompt. Microsoft first released it in 2006. 
+While PowerShell has all the standard functionality Command Prompt provides, it also 
+provides access to cmdlets (pronounced command-lets), which are .NET classes to perform 
+specific functions. While we can write our own cmdlets, like the creators of PowerView did, 
+we can already get very far using the built-in ones.
+
+### Some commmon commands..
+
+1. Enumerate Users
+
+ - List a Specific User:
+
+       Get-ADUser -Identity gordon.stevens -Server za.tryhackme.com -Properties *
+   
+Shows all attributes (e.g., Description, LastLogon, group memberships).
+
+ - Search Users with Filters:
+
+       Get-ADUser -Filter 'Name -like "*stevens"' -Server za.tryhackme.com | Format-Table  Name,SamAccountName
+
+2. Enumerate Groups
+
+ - List Group Details:
+
+       Get-ADGroup -Identity "Administrators" -Server za.tryhackme.com
+
+ - List Group Members:
+
+       Get-ADGroupMember -Identity "Tier 1 Admins" -Server za.tryhackme.com
+
+3. Search AD Objects
+ - Find Modified Objects (e.g., after a date):
+
+       $ChangeDate = New-Object DateTime(2022, 02, 28, 12, 00, 00)
+       Get-ADObject -Filter 'whenChanged -gt $ChangeDate' -Server za.tryhackme.com
+
+ - Find Accounts with Failed Logins (for password spraying avoidance):
+    
+       Get-ADObject -Filter 'badPwdCount -gt 0' -Server za.tryhackme.com
+
+
+4. Domain Information
+
+       Get-ADDomain -Server za.tryhackme.com
+
+    Reveals domain structure, containers (e.g., UsersContainer, DomainControllersContainer).
+
+5. Modify AD Objects (Example: Password Reset)
+
+       Set-ADAccountPassword -Identity gordon.stevens -OldPassword (ConvertTo-SecureString "old" -AsPlainText -Force) -NewPassword (ConvertTo-SecureString "new" -AsPlainText -Force) -Server za.tryhackme.com
 
 
 
@@ -363,54 +409,159 @@ PowerShell is the upgrade of Command Prompt. Microsoft first released it in 2006
 
 ## _Answers_
 
-1. Apart from the Domain Users group, what other group is the aaron.harris account a member of?
+1. What is the value of the `Title` attribute of Beth Nolan (`beth.nolan`)?
 
-       Internet Access
+       senior
 
-For this we need to use follwing command..
 
-      net user aaron.harris /domain
+For this we will use following command, it will give use the value of the title..
+
+     Get-ADUser -Identity beth.nolan -Server za.tryhackme.com -Properties Title | Select-Object Title
+
+![image](https://github.com/user-attachments/assets/396ad168-f843-4914-9532-72f58adb2ba7)
+
+
+
+
+2. What is the value of the `DistinguishedName` attribute of Annette Manning (`annette.manning`)?
+     
+       CN=annette.manning,OU=Marketing, OU=People, DC=za, DC=tryhackme,DC=com
    
-   This will list the details of the user and we need to check Group memberships attribute and we can find out our answer..
+For this we will be using the following command to find the value for DistinguishedName..
 
- ![image](https://github.com/user-attachments/assets/115ec4d4-c792-4df6-b3d4-7ead9db29a40)
-
+       Get-ADUser -Identity annette.manning -Server za.tryhackme.com -Properties DistinguishedName | Select-Object DistinguishedName
    
-
-3. Is the Guest account active? (Yay,Nay)
-
-       Nay
-
-   By looking at the output of the  follwoing command we can tell user status..
-
-       net user guest /domain
-       
-  If "Account active" is `Yes` then it is `Yay` and `Nay` if "Account active" is `No`.
-![image](https://github.com/user-attachments/assets/6e07ee66-7a06-4c8b-8a4e-35e5ffca2d88)
+![image](https://github.com/user-attachments/assets/ef7f270c-4fdd-4707-b845-69711420fc03)
 
 
 
-4. How many accounts are a member of the Tier 1 Admins group?
 
-       7       
+3. When was the `Tier 2` Admins group created?
 
- By using the following command, we can find the names of all the users..
+       2/24/2022 10:04:41 PM
 
-       net group "Tier 1 Admins" /domain
+Using the following command , we can see the time where the admin was created...
 
-![image](https://github.com/user-attachments/assets/e06e1790-d359-4960-aa16-7aa11f957817)
+       Get-ADGroup -Identity "Tier 2 Admins" -Server za.tryhackme.com -Properties Created | Select-Object Created
+
+![image](https://github.com/user-attachments/assets/8dc3612a-6a22-43c7-9b14-974969c15b13)
 
 
-5. What is the account lockout duration of the current password policy in minutes?
 
-       30
+4. What is the value of the `SID` attribute of the Enterprise Admins group?
+ 
+       S-1-5-21-3330634377-1326264276-632209373-519
 
-For find out the lockout duration policy, I used the following command...
 
-       net accounts /domain
+ For finding the `SID` value for Enterprise Admins group, we can see the output of the following command
+
+        Get-ADGroup -Identity "Enterprise Admins" -Server za.tryhackme.com -Properties SID | Select-Object SID
+        
+![image](https://github.com/user-attachments/assets/4ac03d14-e1ab-486a-96b5-5762a1dc78e9)
+
+
+5. Which container is used to store deleted AD objects?
+
+       CN=Deleted Objects,DC=za,DC=tryhackme,DC=com
+
+For find out the container, we can see the following command..
+    
+     Get-ADDomain -Server za.tryhackme.com | Select-Object DeletedObjectsContainer
    
-![image](https://github.com/user-attachments/assets/a9372efb-acca-4b64-80bf-82b7eade8f17)
+![image](https://github.com/user-attachments/assets/c0d433a5-cdc1-4aae-aa5e-73e3a25157b0)
+
+
 
 
 <br>
+
+
+
+## Task 6 : Enumeration through Bloodhound
+
+We will be using the following tools...
+  
+  - `Bloodhound`: GUI tool that visualizes Active Directory attack paths using graph theory.
+  - `Sharphound`: Data collector for Bloodhound (runs on the target network).
+  - `Neo4j`: Database backend that powers Bloodhound.
+
+
+
+
+![image](https://github.com/user-attachments/assets/cc00cfab-6ba8-4e8a-a298-a0a6e75890ab)
+
+![image](https://github.com/user-attachments/assets/44642be4-26ae-4a50-bb6e-a572aa2abd54)
+
+<br> 
+
+## _Answers_
+
+
+1. What command can be used to execute Sharphound.exe and request that it recovers Session information only from the za.tryhackme.com domain without touching domain controllers?
+
+     To start with, we will use the `Sharphound` and For this we will use the follwoign command to
+
+- collect only session data (noisy but lightweight).
+- Avoids domain controllers (`--ExcludeDCs`).
+
+       SharpHound.exe --CollectionMethods Session --Domain za.tryhackme.com --ExcludeDCs
+
+![image](https://github.com/user-attachments/assets/c1dee5ee-e3f3-4ea6-9128-84d170201665)
+
+
+
+ Once we retirve the zip file we need to drag it into the bloodhound where we can found the rest of the answers..
+
+         scp za.tryhackme.com\\arthur.campbell@thmjmp1.za.tryhackme.com:C:/Users/arthur.campbell/Documents/202*.zip .
+ 
+2. Apart from the krbtgt account, how many other accounts are potentially kerberoastable?
+
+        4
+  
+4. How many machines do members of the Tier 1 Admins group have administrative access to?
+
+       2 
+
+5. How many users are members of the Tier 2 Admins group?
+
+       15
+
+
+<br> 
+
+
+## Task 7 : Conclusion
+
+### Core Enumeration Techniques Covered:
+- `Microsoft Management Console` (MMC) – GUI-based AD exploration using RSAT tools.
+- `Command Prompt` (net commands) – Quick user/group/policy checks (e.g., net user /domain).
+- `PowerShell` (AD-RSAT) – Advanced queries (e.g., Get-ADUser, Get-ADGroup).
+- `Bloodhound/Sharphound` – Visual attack path mapping via graph theory.
+
+### Additional Enumeration Methods
+- LDAP Queries: Directly query DCs for AD objects (e.g., users, groups).
+- PowerView: Legacy but powerful PowerShell script for manual AD recon.
+- WMI (root\directory\ldap): Retrieve AD data via Windows Management Instrumentation.
+
+### Why Enumeration Matters
+- **Understand AD Structure:** Identify users, groups, OUs, and trust relationships.
+- **Find Attack Paths:** Discover privilege escalation routes (e.g., misconfigured ACLs, nested groups).
+- **Plan Exploits:** Use data to stage targeted attacks (e.g., `Kerberoasting`, `lateral movement`).
+
+
+### Mitigation Strategies
+- **Detect Anomalies:**
+  - Monitor mass LogOn events (e.g., Sharphound’s session enumeration).
+  - Block/alert on unauthorized `PowerShell`/`CMD` usage.
+
+- **Tool Signatures:**
+  - Flag `Sharphound` binaries or RSAT tooling on non-admin systems.
+
+- **Proactive Defense:**
+  - Blue teams should regularly audit AD using the same tools to fix misconfigurations.
+
+
+### Next Steps
+- `Privilege Escalation`: Exploit weak permissions (e.g., overly permissive groups).
+- `Lateral Movement`: Move from low-value to high-value targets (e.g., workstations → DCs).
 
