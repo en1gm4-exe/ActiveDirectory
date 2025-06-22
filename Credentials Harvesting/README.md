@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/d1dfcece-13a2-4988-888a-b219368dddce)![image](https://github.com/user-attachments/assets/2fb2c90e-77fb-422e-9387-b6d976b7a251)
+![image](https://github.com/user-attachments/assets/2fb2c90e-77fb-422e-9387-b6d976b7a251)
 
 
 # Credentials Harvesting
