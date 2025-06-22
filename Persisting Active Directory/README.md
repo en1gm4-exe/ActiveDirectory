@@ -1,5 +1,4 @@
-![image](https://github.com/user-attachments/assets/6d5aa736-4542-468d-bd56-1fc0cfa9b113)![image](https://github.com/user-attachments/assets/2c230d3f-1a4f-4a81-b3d0-6ea422d30004)
-
+![image](https://github.com/user-attachments/assets/6d5aa736-4542-468d-bd56-1fc0cfa9b113)
 # Persisting Active Directory
 Learn about common Active Directory persistence techniques that can be used post-compromise to ensure the blue team will not be able to kick you out during a red team exercise.
 
@@ -80,14 +79,23 @@ These credentials allow access to `THMWRK1.za.tryhackme.loc` (a jump host).
 
   - Use RDP client for gui remote access.
   
-          xfreerdp /v:thmwrk1.za.tryhackme.com /u:tony.wilson /p:Corpus2002 /cert:ignore
+          xfreerdp3 /v:thmwrk1.za.tryhackme.com /u:tony.wilson /p:Corpus2002 /cert:ignore
 
 
 > Via SSH (Faster):
 
   - Use SSH for cli remote access.
     
-        ssh za\tony.wilson@thmwrk1.za.tryhackme.loc
+        ssh za\\tony.wilson@thmwrk1.za.tryhackme.loc
 
 
 
+<br>
+
+
+## Task 2 : Persistence through Credentials
+
+**Objective:**
+  We will use Mimikatz to perform a DCSync attack and extract credentials (including NTLM hashes) from the domain controller.
+
+  
